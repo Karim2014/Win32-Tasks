@@ -245,7 +245,7 @@ LRESULT CALLBACK PopupWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	switch(uMsg) {
 		// Нажата левая кнопка мыши в клиентской обл. окна.
 	case WM_LBUTTONDBLCLK:
-			
+			MessageBox(hMainWnd, L"Данное окно является всплывающим. При двойном нажатии правой кнопкой окно центрируется по позиции курсора", L"Информация", MB_OK | MB_ICONINFORMATION );
 			break;
 		// Пользователь удалил окно
 		case WM_RBUTTONDBLCLK:
@@ -281,18 +281,20 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	switch(uMsg) {
 		// Нажата левая кнопка мыши в клиентской обл. окна.
 		case WM_LBUTTONDOWN:
-			//WORD newX;
-			WORD MWH = GetWindowHeight(hMainWnd);
-			WORD width = GetWindowWidth(hWnd);
-			WORD height = GetWindowHeight(hWnd);
-			WORD newY = MWH - width;
+			WORD MWH, width, height, newY, newX;
+			MWH = GetWindowHeight(hMainWnd);
+			width = GetWindowWidth(hWnd);
+			height = GetWindowHeight(hWnd);
+			newY = MWH - width;
 			MoveWindow(hWnd, 0, newY, width, height, true);
-			//MessageBox(hWnd, L"12", L"!!", MB_OK|MB_ICONERROR);
 			break;
 		// Пользователь удалил окно
 		case WM_RBUTTONDOWN:
-			Beep(2500, 1000);
-			//MessageBox(hWnd, _T("Windows Aplication"), _T("MainWindowMessage"), MB_OK|MB_ICONINFORMATION);
+			width = GetWindowWidth(hWnd);
+			height = GetWindowHeight(hWnd);
+			newX = GetSystemMetrics(SM_CXSCREEN)/2 - width/2,// X-координата
+			newY = GetSystemMetrics(SM_CYSCREEN)/2 - height/2 ,// Y-координата
+			MoveWindow(hWnd, newX, newY, width, height, true);			
 			break;
 		case WM_DESTROY:
 			// Если это оконная функция главного окна, то в очередь
