@@ -16,6 +16,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <time.h>
 
 
 // TODO: Установите здесь ссылки на дополнительные заголовки, требующиеся для программы
