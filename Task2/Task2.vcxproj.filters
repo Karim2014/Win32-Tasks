@@ -57,6 +57,9 @@
     <ClInclude Include="ChildWindow.h">
       <Filter>Заголовочные файлы\windows</Filter>
     </ClInclude>
+    <ClInclude Include="WndProc.h">
+      <Filter>Заголовочные файлы\windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -78,6 +81,9 @@
       <Filter>Файлы исходного кода\windows</Filter>
     </ClCompile>
     <ClCompile Include="ChildWindow.cpp">
+      <Filter>Файлы исходного кода\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="WndProc.cpp">
       <Filter>Файлы исходного кода\windows</Filter>
     </ClCompile>
   </ItemGroup>

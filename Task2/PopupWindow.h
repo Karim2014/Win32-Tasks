@@ -3,7 +3,7 @@
 
 class PopupWindow : public Window {
 public:
-	PopupWindow(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, HWND hMainWnd) : Window(hInstance, szClassName, szWindowTitle, WS_OVERLAPPED, hMainWnd) {};
+	PopupWindow(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, Window* hMainWnd) : Window(hInstance, szClassName, szWindowTitle, WS_OVERLAPPED, hMainWnd) {};
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 

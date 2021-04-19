@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "Window.h"
 
+Window::Window(HWND handle) {
+	isErr = 0;
+	hwnd = handle;
+	isErr = !hwnd ? 1 : 0;
+}
+
 Window::Window(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, int windowStyle) {
 	// —брасываем флаг ошибки
 	isErr = 0;
@@ -25,7 +31,7 @@ Window::Window(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, in
 	}
 }
 
-Window::Window(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, int windowStyle, HWND hParentWnd) {
+Window::Window(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, int windowStyle, Window* hParentWnd) {
 	
 	// —брасываем флаг ошибки
 	isErr = 0;
@@ -36,9 +42,9 @@ Window::Window(HINSTANCE hInstance, TCHAR* szClassName, TCHAR* szWindowTitle, in
 		windowStyle, // стиль окна
 		CW_USEDEFAULT,       // задаем размеры и расположение
 		CW_USEDEFAULT,       // окна, прин€тые по умолчанию 
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		hParentWnd,                   // идентификатор родительского окна
+		100,
+		200,
+		hParentWnd->hwnd,                   // идентификатор родительского окна
 		0,                   // идентификатор меню
 		hInstance,           // идентификатор приложени€
 		NULL);               // указатель на дополнительные

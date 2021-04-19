@@ -12,8 +12,8 @@ WinApp::WinApp(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int 
 BOOL WinApp::RegisterWndClass(LPCWSTR szClassName, WNDPROC WndProc) {
 	ATOM aWndClass; // атом дл€ кода возврата
 	WNDCLASS wc; // структура дл€ регистрации класса окна
-	
-	wc.style         = 0;
+
+	wc.style         = CS_HREDRAW|CS_VREDRAW;
 	wc.lpfnWndProc   = (WNDPROC) WndProc;
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;
@@ -24,17 +24,20 @@ BOOL WinApp::RegisterWndClass(LPCWSTR szClassName, WNDPROC WndProc) {
 	wc.lpszMenuName  = NULL;
 	wc.lpszClassName = szClassName;
 	aWndClass = RegisterClass(&wc);
+	if (!aWndClass) {
+		MessageBox(NULL, _T("Window create error"), szClassName, MB_OK|MB_ICONSTOP);
+	}
 	return (aWndClass != 0);
 	
 };
 
 // «апуск цикла обработки сообщений
-WORD WinApp::Go(void)
-{
-  // «апускаем цикл обработки сообщений
-  while(GetMessage(&msg, 0, 0, 0))
-  {
-    DispatchMessage(&msg);
-  }
-  return msg.wParam;
+WORD WinApp::Go() {
+	// «апускаем цикл обработки сообщений
+	while(GetMessage(&msg, 0, 0, 0)) {
+		// ѕреобразов. сообщ., получ с помощью клавиатуры
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	return msg.wParam;
 };
