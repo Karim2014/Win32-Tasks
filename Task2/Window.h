@@ -6,7 +6,7 @@ protected:
 	int isErr; // флаг ошибки
 	HWND hwnd; // дескритор окна
 public:
-	Window(HWND handle);
+	Window(HWND handle); // к-р по-умолч
 	Window(HINSTANCE hInstance, TCHAR* className, TCHAR* wndTitle, int windowStyle);
 	Window(HINSTANCE hInstance, TCHAR* className, TCHAR* windowTitle, int windowStyle, Window* hParentWnd);
 	HWND getHWND() { return hwnd; }

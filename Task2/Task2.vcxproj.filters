@@ -45,16 +45,7 @@
     <ClInclude Include="WinApp.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="MainWindow.h">
-      <Filter>Заголовочные файлы\windows</Filter>
-    </ClInclude>
     <ClInclude Include="Window.h">
-      <Filter>Заголовочные файлы\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="PopupWindow.h">
-      <Filter>Заголовочные файлы\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="ChildWindow.h">
       <Filter>Заголовочные файлы\windows</Filter>
     </ClInclude>
     <ClInclude Include="WndProc.h">
@@ -71,16 +62,7 @@
     <ClCompile Include="WinApp.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="MainWindow.cpp">
-      <Filter>Файлы исходного кода\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="PopupWindow.cpp">
-      <Filter>Файлы исходного кода\windows</Filter>
-    </ClCompile>
     <ClCompile Include="Window.cpp">
-      <Filter>Файлы исходного кода\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="ChildWindow.cpp">
       <Filter>Файлы исходного кода\windows</Filter>
     </ClCompile>
     <ClCompile Include="WndProc.cpp">

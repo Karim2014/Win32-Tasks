@@ -14,6 +14,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	INT height, width;
 	switch (uMsg) {
 	case WM_SIZE:
+		// получаем центр окна
 		x = GetWindowWidth(hWnd)/2;
 		y = GetWindowHeight(hWnd)/2;
 		break;
@@ -75,10 +76,12 @@ LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		//рисуем закруглённый прямоугольник
+		//создаем объект кисть
 		hBrush = CreateHatchBrush(curBrushIndex, RGB(250,200,100));
+		// выбриаем объекты
 		SelectObject(hdc, hBrush);
 		SelectObject(hdc, hPen);
+		//рисуем закруглённый прямоугольник
 		RoundRect(hdc, 20, 20, rect.right-rect.left-20, rect.bottom-rect.top-40, 15, 15);
 		DeleteObject(hPen);
 		DeleteObject(hBrush);
@@ -109,24 +112,19 @@ LRESULT CALLBACK PopupWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	switch (uMsg) {
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);		
-		//LOGFONT lf;
-		//lf.lfCharSet = DEFAULT_CHARSET;
-		//lf.lfPitchAndFamily = DEFAULT_PITCH;
-		//strcpy((char*) lf.lfFaceName, "Times New Roman");
-		//lf.lfHeight=20; //высота
-		//lf.lfWidth=10; //ширина
-		//lf.lfWeight=40; //толщина
-		//lf.lfEscapement=0; //шрифт без поворота
-		//hFont = CreateFontIndirect(&lf);
+		// получаем рамеры рабочей области
 		GetClientRect(hWnd, &rectPlace);
+		// устанавливаем цвет текста
 		SetTextColor(hdc, NULL);
+		// создаем шрифт
 		hFont = CreateFont(fontSize,0,0,0,0,0,0,0,
 								DEFAULT_CHARSET,100,0,0, DEFAULT_PITCH, L"Times New Roman");
-		
+		// выбираем шрифт
 		SelectObject(hdc, hFont);
+		// выводим текст
 		DrawText(hdc, (LPCWSTR) str, 26, &rectPlace, DT_WORDBREAK|DT_CENTER|DT_VCENTER);
-		//TextOut(hdc, 1,1, str, 50);//strlen((char*)str));
-		//DeleteObject(hFont);
+		// удаляем объект шрифт
+		DeleteObject(hFont);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_KEYDOWN:
@@ -147,15 +145,16 @@ LRESULT CALLBACK PopupWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 void Redraw(HWND hWnd) {
 	InvalidateRect(hWnd, NULL, TRUE);
-	//UpdateWindow(hWnd);
 }
 
+// полуаем ширину рабочей области
 WORD GetWindowWidth(HWND hwnd) {
 	RECT rect;
 	GetClientRect(hwnd, &rect);
 	return rect.right - rect.left;
 };
 
+// получаем всоту рабочей области
 WORD GetWindowHeight(HWND hwnd) {
 	RECT rect;
 	GetClientRect(hwnd, &rect);
