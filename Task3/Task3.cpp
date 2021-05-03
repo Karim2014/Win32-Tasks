@@ -8,13 +8,17 @@
 
 // Глобальные переменные:
 HINSTANCE hInst;								// текущий экземпляр
-TCHAR szTitle[MAX_LOADSTRING];					// Текст строки заголовка
-TCHAR szWindowClass[MAX_LOADSTRING];			// имя класса главного окна
+TCHAR szMainTitle[MAX_LOADSTRING];					// Текст строки заголовка
+TCHAR szMainWindowClass[MAX_LOADSTRING];			// имя класса главного окна
+TCHAR szPopupTitle[MAX_LOADSTRING]; // текст строки заголовка временного окна
+TCHAR szPopupWindowClass[MAX_LOADSTRING]; // имя класса временного окна
 
 // Отправить объявления функций, включенных в этот модуль кода:
-ATOM				MyRegisterClass(HINSTANCE hInstance);
+ATOM				RegisterMainClass(HINSTANCE hInstance);
+ATOM				RegisterPopupClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK	WndProcPopup(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -30,9 +34,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HACCEL hAccelTable;
 
 	// Инициализация глобальных строк
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadString(hInstance, IDC_TASK3, szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
+	LoadString(hInstance, IDS_APP_TITLE, szMainTitle, MAX_LOADSTRING);
+	LoadString(hInstance, IDS_POPUP_TITLE, szPopupTitle, MAX_LOADSTRING);
+	LoadString(hInstance, IDC_TASK3, szMainWindowClass, MAX_LOADSTRING);
+	LoadString(hInstance, IDC_POPUP, szPopupWindowClass, MAX_LOADSTRING);
+	RegisterMainClass(hInstance);
+	RegisterPopupClass(hInstance);
 
 	// Выполнить инициализацию приложения:
 	if (!InitInstance (hInstance, nCmdShow))
@@ -58,7 +65,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 
 //
-//  ФУНКЦИЯ: MyRegisterClass()
+//  ФУНКЦИЯ: RegisterMainClass()
 //
 //  НАЗНАЧЕНИЕ: регистрирует класс окна.
 //
@@ -70,7 +77,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 //    чтобы приложение получило "качественные" мелкие значки и установило связь
 //    с ними.
 //
-ATOM MyRegisterClass(HINSTANCE hInstance)
+ATOM RegisterMainClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
 
@@ -85,8 +92,34 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_TASK3);
-	wcex.lpszClassName	= szWindowClass;
+	wcex.lpszClassName	= szMainWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+	return RegisterClassEx(&wcex);
+}
+
+//
+//  ФУНКЦИЯ: RegisterPopupClass()
+//
+//  НАЗНАЧЕНИЕ: регистрирует класс временного окна.
+//
+ATOM RegisterPopupClass(HINSTANCE hInstance)
+{
+	WNDCLASSEX wcex;
+
+	wcex.cbSize = sizeof(WNDCLASSEX);
+
+	wcex.style			= CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc	= WndProcPopup;
+	wcex.cbClsExtra		= 0;
+	wcex.cbWndExtra		= 0;
+	wcex.hInstance		= hInstance;
+	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TASK3)); // todo
+	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW); // todo
+	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_POPUP);
+	wcex.lpszClassName	= szPopupWindowClass;
+	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)); // todo
 
 	return RegisterClassEx(&wcex);
 }
@@ -103,20 +136,31 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd;
+   HWND hWndMain, hWndPopup;
 
    hInst = hInstance; // Сохранить дескриптор экземпляра в глобальной переменной
 
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   // создаем главное окно
+   hWndMain = CreateWindow(szMainWindowClass, szMainTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
-
-   if (!hWnd)
-   {
-      return FALSE;
+   // если главное окно не создано - закончить
+   if (!hWndMain) {
+	   // todo добавить диалог об ошибке
+	   return FALSE;
    }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   // создаем временное окно
+   hWndPopup = CreateWindow(szPopupWindowClass, szPopupTitle, WS_POPUPWINDOW | WS_VISIBLE | WS_CAPTION, 
+	   300, 100, 400, 300, hWndMain, NULL, hInstance, NULL);
+   if (!hWndPopup) {
+	   // todo добавить диалог об ошибке
+	   MessageBox(NULL, L"Ошибка создания дочернего окна", L"Ошибка", MB_OK | MB_ICONERROR);
+	   return FALSE;
+   }
+   
+   ShowWindow(hWndMain, SW_MAXIMIZE);
+   UpdateWindow(hWndMain);
+   ShowWindow(hWndPopup, nCmdShow);
+   UpdateWindow(hWndPopup);
 
    return TRUE;
 }
@@ -167,6 +211,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}
+
+// обработчик сообщений для временного окна
+LRESULT CALLBACK WndProcPopup(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 // Обработчик сообщений для окна "О программе".

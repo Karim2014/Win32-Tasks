@@ -88,6 +88,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Task3.cpp" />
+    <ClCompile Include="WndProc.cpp" />
+    <ClCompile Include="WndProc.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Task3.rc" />
