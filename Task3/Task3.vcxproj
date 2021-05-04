@@ -72,6 +72,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="cursor1.cur" />
+    <None Include="popup.ico" />
     <None Include="ReadMe.txt" />
     <None Include="small.ico" />
     <None Include="Task3.ico" />

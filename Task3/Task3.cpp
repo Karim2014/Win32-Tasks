@@ -33,7 +33,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
  	// TODO: разместите код здесь.
 	MSG msg;
 	HACCEL hAccelTable;
-
 	srand(time(0));
 
 	// Инициализация глобальных строк
@@ -41,6 +40,24 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	LoadString(hInstance, IDS_POPUP_TITLE, szPopupTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_TASK3, szMainWindowClass, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_POPUP, szPopupWindowClass, MAX_LOADSTRING);
+
+	HWND hMainWnd;
+	// --- Проверка, было ли приложение запущено ранее
+	if((hMainWnd = FindWindow(szMainWindowClass, NULL)) != NULL) {
+		// Если прилож. было запущено ранее, активизировать
+		// и выдвинуть на передний план его главное окно
+		if (MessageBox(hMainWnd, L"Экземпляр программы уже запущен! Продолжить работу с программой?", 
+			L"Внимание!", MB_YESNO | MB_ICONEXCLAMATION|MB_TASKMODAL) != IDYES) {
+				DestroyWindow(hMainWnd);
+				return FALSE;
+		}
+		if(IsIconic(hMainWnd))
+			ShowWindow(hMainWnd, SW_RESTORE);
+		SetForegroundWindow(hMainWnd);
+		// Работа новой копии прекращается
+		return FALSE;
+	}
+
 	RegisterMainClass(hInstance);
 	RegisterPopupClass(hInstance);
 
@@ -92,7 +109,7 @@ ATOM RegisterMainClass(HINSTANCE hInstance)
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TASK3));
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
+	wcex.hCursor		= LoadCursor(hInstance, MAKEINTRESOURCE(IDC_CURSOR1));
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= NULL;//MAKEINTRESOURCE(IDC_TASK3);
 	wcex.lpszClassName	= szMainWindowClass;
@@ -117,12 +134,12 @@ ATOM RegisterPopupClass(HINSTANCE hInstance)
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TASK3)); // todo
+	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_POPUP)); // todo
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW); // todo
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= NULL;//MAKEINTRESOURCE(IDC_POPUP);
 	wcex.lpszClassName	= szPopupWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)); // todo
+	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_POPUP)); // todo
 
 	return RegisterClassEx(&wcex);
 }
