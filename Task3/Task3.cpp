@@ -34,6 +34,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	MSG msg;
 	HACCEL hAccelTable;
 
+	srand(time(0));
+
 	// Инициализация глобальных строк
 	LoadString(hInstance, IDS_APP_TITLE, szMainTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDS_POPUP_TITLE, szPopupTitle, MAX_LOADSTRING);
@@ -165,6 +167,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWndPopup, nCmdShow);
    UpdateWindow(hWndPopup);
 
+   SetTimer(hWndMain, 1, 1000, NULL);
+   SetTimer(hWndPopup, 2, 700, NULL);
+
    return TRUE;
 }
 
@@ -223,17 +228,45 @@ HMENU PrepareContextMenu() {
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	int wmId, wmEvent;
+	TCHAR str[] = L"Lorem Ipsum Dolar Sit Ammet";
 	PAINTSTRUCT ps;
-	HDC hdc;
+	RECT rectPlace, rect;
+	static INT cx = 0, cy = 0;
+	HDC hdc;	
+	HFONT hFont;
+	static LOGFONT lf;
+	CHOOSEFONT cf;
 
-	switch (message)
-	{
+	ZeroMemory(&cf, sizeof(CHOOSEFONT));
+	cf.Flags		= CF_EFFECTS | CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
+	cf.hwndOwner	= hWnd;
+	cf.lpLogFont	= &lf;
+	cf.lStructSize	= sizeof(CHOOSEFONT);
+
+	switch (message) {
+	case WM_CREATE:
+		GetObject(GetStockObject(SYSTEM_FONT), sizeof(LOGFONT), (LPSTR)&lf);
+		break;
 	case WM_COMMAND:
 		wmId    = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Разобрать выбор в меню:
 		switch (wmId)
 		{
+		case IDM_PARAM_CHANGE:
+			if (ChooseFont(&cf)) 
+				InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		case IDM_PARAM_RESET:
+			GetObject(GetStockObject(SYSTEM_FONT), sizeof(LOGFONT), (LPSTR)&lf);
+			InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		case IDM_MOVE_STOP:
+			KillTimer(hWnd, 1);
+			break;
+		case IDM_MOVE_RESET:
+			SetTimer(hWnd, 1, 1000, NULL);
+			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
@@ -246,8 +279,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		// TODO: добавьте любой код отрисовки...
+		// устанавливаем цвет текста
+		SetTextColor(hdc, NULL);
+		// создаем шрифт
+		hFont = CreateFontIndirect(&lf);
+		// выбираем шрифт
+		SelectObject(hdc, hFont);
+		TextOut(hdc, cx, cy, str, wcslen(str));
+		//DrawText(hdc, (LPCWSTR) str, wcslen(str), &rectPlace, DT_WORDBREAK|DT_CENTER|DT_VCENTER);
+		// удаляем объект шрифт
+		DeleteObject(hFont);
 		EndPaint(hWnd, &ps);
+		break;
+	case WM_TIMER:
+		// определяем ширину и выслоту выводимого окна
+		DrawText(GetDC(hWnd), (LPCWSTR) str, wcslen(str), &rect, DT_CALCRECT);
+		// получаем рамеры рабочей области
+		GetClientRect(hWnd, &rectPlace);
+		cx = (rectPlace.left + rand() % rectPlace.right) - (rect.right - rect.left);
+		cy = (rectPlace.top + rand() % rectPlace.bottom) - (rect.bottom - rect.right);
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -261,12 +312,92 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // обработчик сообщений для временного окна
 LRESULT CALLBACK WndProcPopup(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	HMENU hMenu;
+	int wmId, wmEvent;
+	HDC hdc;	
+	PAINTSTRUCT ps;
+	static INT R = 25;
+	static INT posIndex = 0;
+	static INT msTimer = 700;
+	RECT r;
+	static POINT pos[4];// = { {0,0}, {1,0}, {1,1}, {0,1} };
+
 	switch(message) {
+	case WM_CREATE:
+		GetClientRect(hWnd, &r);
+		pos[0].x = 0;			pos[0].y = 0;
+		pos[1].x = r.right-R*2; pos[1].y = 0; 
+		pos[2].x = r.right-R*2; pos[2].y = r.bottom-R*2; 
+		pos[3].x = 0;			pos[3].y = r.bottom-R*2; 
+		break;
+	case WM_COMMAND:
+		wmId    = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		switch(wmId) {
+		case IDM_SIZE_INC:
+			R *= 1.2;
+			GetClientRect(hWnd, &r);
+			pos[0].x = 0;			pos[0].y = 0;
+			pos[1].x = r.right-R*2; pos[1].y = 0; 
+			pos[2].x = r.right-R*2; pos[2].y = r.bottom-R*2; 
+			pos[3].x = 0;			pos[3].y = r.bottom-R*2; 
+			InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		case IDM_SIZE_DEC:
+			R /= 1.2;
+			GetClientRect(hWnd, &r);
+			pos[0].x = 0;			pos[0].y = 0;
+			pos[1].x = r.right-R*2; pos[1].y = 0; 
+			pos[2].x = r.right-R*2; pos[2].y = r.bottom-R*2; 
+			pos[3].x = 0;			pos[3].y = r.bottom-R*2; 
+			InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		case IDM_SIZE_RESET:
+			R = 25;
+			GetClientRect(hWnd, &r);
+			pos[0].x = 0;			pos[0].y = 0;
+			pos[1].x = r.right-R*2; pos[1].y = 0; 
+			pos[2].x = r.right-R*2; pos[2].y = r.bottom-R*2; 
+			pos[3].x = 0;			pos[3].y = r.bottom-R*2; 
+			InvalidateRect(hWnd, NULL, TRUE);
+			break;
+		case IDM_TIME_INC:
+			msTimer *= 1.5;
+			KillTimer(hWnd, 2);
+			SetTimer(hWnd, 2, msTimer, NULL);
+			break;
+		case IDM_TIME_DEC:
+			msTimer /= 1.5;
+			KillTimer(hWnd, 2);
+			SetTimer(hWnd, 2, msTimer, NULL);
+			break;
+		case IDM_TIME_RESET:
+			msTimer = 700;
+			KillTimer(hWnd, 2);
+			SetTimer(hWnd, 2, msTimer, NULL);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		break;
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		GetClientRect(hWnd, &r);
+		Ellipse(hdc, pos[posIndex].x, pos[posIndex].y, pos[posIndex].x+R*2, pos[posIndex].y+R*2);
+		//Ellipse(hdc, (r.right-R*2)*pos[posIndex].x, (r.bottom-R*2)*pos[posIndex].y, (r.right)*pos[posIndex].x, (r.bottom)*pos[posIndex].y);
+		EndPaint(hWnd, &ps);
+		break;
 	case WM_CONTEXTMENU:
 		hMenu = PrepareContextMenu();
 		TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_TOPALIGN | TPM_LEFTALIGN,
 			LOWORD(lParam), HIWORD(lParam), 0, hWnd, NULL);
 		DestroyMenu(hMenu);
+		break;
+	case WM_TIMER:
+		posIndex = ++posIndex % 4;
+		InvalidateRect(hWnd, NULL, TRUE);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
