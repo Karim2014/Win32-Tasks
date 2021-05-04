@@ -17,6 +17,7 @@ TCHAR szPopupWindowClass[MAX_LOADSTRING]; // имя класса временного окна
 ATOM				RegisterMainClass(HINSTANCE hInstance);
 ATOM				RegisterPopupClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
+VOID				czCreateMainMenu(HWND hwnd);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	WndProcPopup(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
@@ -91,7 +92,7 @@ ATOM RegisterMainClass(HINSTANCE hInstance)
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TASK3));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_TASK3);
+	wcex.lpszMenuName	= NULL;//MAKEINTRESOURCE(IDC_TASK3);
 	wcex.lpszClassName	= szMainWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -117,7 +118,7 @@ ATOM RegisterPopupClass(HINSTANCE hInstance)
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TASK3)); // todo
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW); // todo
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_POPUP);
+	wcex.lpszMenuName	= NULL;//MAKEINTRESOURCE(IDC_POPUP);
 	wcex.lpszClassName	= szPopupWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)); // todo
 
@@ -157,12 +158,56 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   return FALSE;
    }
    
+   czCreateMainMenu(hWndMain);
+
    ShowWindow(hWndMain, SW_MAXIMIZE);
    UpdateWindow(hWndMain);
    ShowWindow(hWndPopup, nCmdShow);
    UpdateWindow(hWndPopup);
 
    return TRUE;
+}
+
+// функция дл создания меню главного окна
+VOID czCreateMainMenu(HWND hwnd) {
+	HMENU hMenu				= CreateMenu();
+	HMENU hPopupMenuMove	= CreatePopupMenu();
+	HMENU hPopupMenuParam	= CreatePopupMenu();
+
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT) hPopupMenuMove, L"&Движение объекта");
+	{
+		AppendMenu(hPopupMenuMove, MF_STRING, IDM_MOVE_STOP, L"Ос&тановить");
+		AppendMenu(hPopupMenuMove, MF_STRING, IDM_MOVE_RESET, L"&Возобновить");
+	}
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT) hPopupMenuParam, L"&Параметры объекта");
+	{
+		AppendMenu(hPopupMenuParam, MF_STRING, IDM_PARAM_RESET, L"&Задать исходные");
+		AppendMenu(hPopupMenuParam, MF_STRING, IDM_PARAM_CHANGE, L"&Изменить в диалоге");
+	}
+	AppendMenu(hMenu, MF_STRING, IDM_ABOUT, L"&О программе");
+	AppendMenu(hMenu, MF_STRING, IDM_EXIT, L"В&ыход");
+	SetMenu(hwnd, hMenu);
+}
+
+HMENU PrepareContextMenu() {
+	HMENU hMenu				= CreatePopupMenu();
+	HMENU hPopupMenuMove	= CreatePopupMenu();
+	HMENU hPopupMenuParam	= CreatePopupMenu();
+
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT) hPopupMenuMove, L"&Размеры объекта");
+	{
+		AppendMenu(hPopupMenuMove, MF_STRING, IDM_SIZE_INC, L"У&величить в 1,2 раза");
+		AppendMenu(hPopupMenuMove, MF_STRING, IDM_SIZE_DEC, L"У&меньшить в 1,2 раза");
+		AppendMenu(hPopupMenuMove, MF_STRING, IDM_SIZE_RESET, L"&Задать исходные");
+	}
+	AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT) hPopupMenuParam, L"В&ременной интервал");
+	{
+		AppendMenu(hPopupMenuParam, MF_STRING, IDM_TIME_INC, L"У&величить в 1,5 раза");
+		AppendMenu(hPopupMenuParam, MF_STRING, IDM_TIME_DEC, L"У&меньшить в 1,5 раза");
+		AppendMenu(hPopupMenuParam, MF_STRING, IDM_TIME_RESET, L"&Задать исходные");
+	}
+	AppendMenu(hMenu, MF_STRING, IDM_EXIT, L"За&крыть окно");
+	return hMenu;
 }
 
 //
@@ -215,7 +260,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 // обработчик сообщений для временного окна
 LRESULT CALLBACK WndProcPopup(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	return DefWindowProc(hWnd, message, wParam, lParam);
+	HMENU hMenu;
+	switch(message) {
+	case WM_CONTEXTMENU:
+		hMenu = PrepareContextMenu();
+		TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_TOPALIGN | TPM_LEFTALIGN,
+			LOWORD(lParam), HIWORD(lParam), 0, hWnd, NULL);
+		DestroyMenu(hMenu);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
 }
 
 // Обработчик сообщений для окна "О программе".
